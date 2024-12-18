@@ -1,16 +1,18 @@
+import streamlit as st
 import cv2
 import numpy as np
 from ultralytics import YOLO
+import tempfile
+import os
 
-def detect_yellow_shirt(video_path, output_file="yellow_shirt_times2.txt"):
+def detect_yellow_shirt(video_path):
     # Carregar modelo YOLO pré-treinado para detectar pessoas
-    model = YOLO("yolov8n.pt")  # Baixe o YOLOv8 modelo antes de usar
+    model = YOLO("yolov8n.pt")  # Baixe o modelo YOLOv8 antes de usar
     cap = cv2.VideoCapture(video_path)
 
     # Variáveis de controle
     fps = cap.get(cv2.CAP_PROP_FPS)  # Obter frames por segundo
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))  # Contar total de frames
-    duration = frame_count / fps  # Duração do vídeo em segundos
 
     # Para salvar timestamps
     yellow_shirt_times = []
@@ -45,16 +47,36 @@ def detect_yellow_shirt(video_path, output_file="yellow_shirt_times2.txt"):
         frame_index += 1
 
     cap.release()
+    return yellow_shirt_times
 
-    # Salvar resultados
-    with open(output_file, "w") as f:
-        for t in yellow_shirt_times:
-            minutes = int(t // 60)
-            seconds = int(t % 60)
-            f.write(f"{minutes:02}:{seconds:02}\n")
-    
-    print(f"Análise concluída! Timestamps salvos em {output_file}")
+# Streamlit app
+st.title("Detecção de Camisas Amarelas em Vídeos")
+st.write("Carregue um vídeo e veja os momentos em que aparecem pessoas com camisas amarelas!")
 
-# Executar a função
-video_path = "C:\\Users\\DTI\\Desktop\\Câmeras\\LJ1\\Etiquetas de preços nos pratos\\AVI\\2-07.avi"  # Substitua pelo caminho do seu vídeo
-detect_yellow_shirt(video_path)
+uploaded_file = st.file_uploader("Carregar vídeo", type=["mp4", "avi", "mov", "mkv"])
+
+if uploaded_file:
+    # Salvar vídeo temporariamente
+    with tempfile.NamedTemporaryFile(delete=False) as temp_video:
+        temp_video.write(uploaded_file.read())
+        video_path = temp_video.name
+
+    st.video(uploaded_file)
+
+    # Botão para iniciar a análise
+    if st.button("Iniciar análise"):
+        with st.spinner("Processando... isso pode levar alguns minutos dependendo do vídeo."):
+            yellow_shirt_times = detect_yellow_shirt(video_path)
+
+        # Exibir resultados
+        if yellow_shirt_times:
+            st.success("Análise concluída! Momentos detectados:")
+            for time in yellow_shirt_times:
+                minutes = int(time // 60)
+                seconds = int(time % 60)
+                st.write(f"📌 {minutes:02}:{seconds:02}")
+        else:
+            st.warning("Nenhuma pessoa com camisa amarela foi detectada.")
+
+    # Remover o vídeo temporário
+    os.remove(video_path)
