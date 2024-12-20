@@ -1,1 +1,1 @@
-# shirt-detection
+# Shirt-Detection
