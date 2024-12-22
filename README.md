@@ -1,1 +1,4 @@
 # Shirt-Detection
+
+
+## 💻 Pré-requisitos
