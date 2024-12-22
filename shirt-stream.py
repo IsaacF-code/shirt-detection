@@ -17,12 +17,21 @@ def detect_yellow_shirt(video_path):
     # Para salvar timestamps
     yellow_shirt_times = []
 
+    # Barra de progresso
+    progress_bar = st.progress(0)
+    progress_text = st.empty()
+
     # Processar frames
     frame_index = 0
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
+        
+        # Atualizar barra de progresso
+        progress = frame_index / frame_count
+        progress_bar.progress(min(progress, 1.0)) # Garantir que não ultrapasse 1.0
+        progress_text.text(f"Processando... {int(progress * 100)}% concluído")
 
         # Processar o frame a cada 10 frames para desempenho
         if frame_index % 10 == 0:
