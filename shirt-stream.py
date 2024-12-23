@@ -56,6 +56,11 @@ def detect_yellow_shirt(video_path):
         frame_index += 1
 
     cap.release()
+
+    # Barra 100%
+    progress_bar.progress(1.0)
+    progress_text.text("Processamento concluído!")
+
     return yellow_shirt_times
 
 # Streamlit app
